@@ -37,6 +37,9 @@ public class MyGdxGame implements ApplicationListener {
 	public AssetManager assets;
 	public boolean loading;
 
+	//proba organizera zawodow i dzialania jsona
+	public OrganizerZawodow organizerZawodow;
+
 	@Override
 	public void create () {
 		modelBatch = new ModelBatch();
@@ -71,6 +74,8 @@ public class MyGdxGame implements ApplicationListener {
 		assets.load("core/assets/tor_scena.g3db", Model.class);
 		//Debug.println("CREATE","after assets.load");
 		loading = true;
+
+		organizerZawodow = new OrganizerZawodow();
 	}
 
 	private void doneLoading()
