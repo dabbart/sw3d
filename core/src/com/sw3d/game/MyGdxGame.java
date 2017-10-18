@@ -10,17 +10,14 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.sun.deploy.util.Waiter;
 import sun.security.ssl.Debug;
 
-import javax.jws.WebParam;
-
 public class MyGdxGame implements ApplicationListener {
-	public PerspectiveCamera cam;
+	public PerspectiveCamera perspectiveCamera;
+	public OrthographicCamera orthographicCamera;
 	public CameraInputController camController;
 
 	public ModelBatch modelBatch;
@@ -48,14 +45,20 @@ public class MyGdxGame implements ApplicationListener {
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f));
 		environment.add(new DirectionalLight().set(0.9f, 0.9f, 0.9f, -1f, -0.8f, -0.2f));
 
-		cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		cam.position.set(0f, 7f, 10f);
-		cam.lookAt(0, 0, 0);
-		cam.near = 1f;
-		cam.far = 300f;
-		cam.update();
+		perspectiveCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		perspectiveCamera.position.set(0f, 7f, 10f);
+		perspectiveCamera.lookAt(0, 0, 0);
+		perspectiveCamera.near = 1f;
+		perspectiveCamera.far = 300f;
+		perspectiveCamera.update();
 
-		camController = new CameraInputController(cam);
+		orthographicCamera = new OrthographicCamera(230, 230 * (Gdx.graphics.getHeight() / (float)Gdx.graphics.getWidth()));
+		orthographicCamera.position.set(32, 8, 32);
+		orthographicCamera.direction.set(0,-1,-0.1f);
+		orthographicCamera.zoom = 1f;
+		orthographicCamera.update();
+
+		camController = new CameraInputController(perspectiveCamera);
 		Gdx.input.setInputProcessor(camController);
 
 		/*ModelBuilder modelBuilder = new ModelBuilder();
@@ -190,7 +193,14 @@ public class MyGdxGame implements ApplicationListener {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT|GL20.GL_DEPTH_BUFFER_BIT);
 
 		//Debug.println("RENDER","2");
-		modelBatch.begin(cam);
+		modelBatch.begin(perspectiveCamera);
+		//Debug.println("RENDER","3");
+		if(instances != null)
+			modelBatch.render(instances, environment);
+		//Debug.println("RENDER","4");
+		modelBatch.end();
+
+		modelBatch.begin(orthographicCamera);
 		//Debug.println("RENDER","3");
 		if(instances != null)
 			modelBatch.render(instances, environment);

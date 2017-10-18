@@ -1,5 +1,7 @@
 package com.sw3d.game;
 
+import java.util.ArrayList;
+
 public class TabelaBieg {
     private int numerBiegu;
     private int punktyGospodarzy;
@@ -7,7 +9,7 @@ public class TabelaBieg {
     private int punktyGosciBieg;
     private int PunktyGospodarzyBieg;
     private float najlepszyCzas;
-    private TabelaBiegIndywidualna[] tabela;
+    private ArrayList tabela;
 
     public TabelaBieg()
     {
@@ -15,20 +17,38 @@ public class TabelaBieg {
         this.punktyGospodarzy = 0;
         this.punktyGosci = 0;
         this.najlepszyCzas = 0f;
-        this.tabela = new TabelaBiegIndywidualna[4];
+
+        this.tabela = new ArrayList();
+        tabela.add(new TabelaBiegIndywidualna());
+        tabela.add(new TabelaBiegIndywidualna());
+        tabela.add(new TabelaBiegIndywidualna());
+        tabela.add(new TabelaBiegIndywidualna());
     }
 
-    public TabelaBieg(int numerBiegu, float najlepszyCzas, TabelaBiegIndywidualna[] tabela) {
+    public TabelaBieg(int numerBiegu, float najlepszyCzas, ArrayList tabela) {
         this.numerBiegu = numerBiegu;
         this.najlepszyCzas = najlepszyCzas;
         this.tabela = tabela;
     }
 
-    public TabelaBiegIndywidualna[] getTabela() {
+    public TabelaBieg(int numerBiegu) {
+        this.numerBiegu = numerBiegu;
+        this.najlepszyCzas = 0f;
+        this.punktyGosci = 0;
+        this.punktyGospodarzy = 0;
+
+        this.tabela = new ArrayList();
+        tabela.add(new TabelaBiegIndywidualna());
+        tabela.add(new TabelaBiegIndywidualna());
+        tabela.add(new TabelaBiegIndywidualna());
+        tabela.add(new TabelaBiegIndywidualna());
+    }
+
+    public ArrayList getTabela() {
         return tabela;
     }
 
-    public void setTabela(TabelaBiegIndywidualna[] tabela) {
+    public void setTabela(ArrayList tabela) {
         this.tabela = tabela;
     }
 

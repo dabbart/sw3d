@@ -1,11 +1,13 @@
 package com.sw3d.game;
 
+import java.util.ArrayList;
+
 public class TabelaTeam {
     private String nazwaDrozyny;
-    private TabelaZawodnik[] zawodnicy;
+    private ArrayList zawodnicy;
     private boolean isTeamGospodarze;
 
-    public TabelaTeam(String nazwaDrozyny, TabelaZawodnik[] zawodnicy, boolean isTeamGospodarze) {
+    public TabelaTeam(String nazwaDrozyny, ArrayList zawodnicy, boolean isTeamGospodarze) {
         this.nazwaDrozyny = nazwaDrozyny;
         this.zawodnicy = zawodnicy;
         this.isTeamGospodarze = isTeamGospodarze;
@@ -13,12 +15,30 @@ public class TabelaTeam {
 
     public TabelaTeam()
     {
-        new TabelaTeam("nazwa drozyny", new TabelaZawodnik[7], false);
+       this.nazwaDrozyny = "nazwa drozyny";
+       this.zawodnicy = new ArrayList();
+       zawodnicy.add(new TabelaZawodnik());
+       zawodnicy.add(new TabelaZawodnik());
+       zawodnicy.add(new TabelaZawodnik());
+       zawodnicy.add(new TabelaZawodnik());
+       zawodnicy.add(new TabelaZawodnik());
+       zawodnicy.add(new TabelaZawodnik());
+       zawodnicy.add(new TabelaZawodnik());
+       this.isTeamGospodarze = true;
     }
 
     public TabelaTeam(boolean isTeamGospodarze)
     {
-        new TabelaTeam("nazwa drozyny", new TabelaZawodnik[7], isTeamGospodarze);
+        this.nazwaDrozyny = "nazwa drozyny";
+        this.zawodnicy = new ArrayList();
+        zawodnicy.add(new TabelaZawodnik());
+        zawodnicy.add(new TabelaZawodnik());
+        zawodnicy.add(new TabelaZawodnik());
+        zawodnicy.add(new TabelaZawodnik());
+        zawodnicy.add(new TabelaZawodnik());
+        zawodnicy.add(new TabelaZawodnik());
+        zawodnicy.add(new TabelaZawodnik());
+        this.isTeamGospodarze = isTeamGospodarze;
     }
 
     public String getNazwaDrozyny() {
@@ -29,11 +49,11 @@ public class TabelaTeam {
         this.nazwaDrozyny = nazwaDrozyny;
     }
 
-    public TabelaZawodnik[] getZawodnicy() {
+    public ArrayList getZawodnicy() {
         return zawodnicy;
     }
 
-    public void setZawodnicy(TabelaZawodnik[] zawodnicy) {
+    public void setZawodnicy(ArrayList zawodnicy) {
         this.zawodnicy = zawodnicy;
     }
 

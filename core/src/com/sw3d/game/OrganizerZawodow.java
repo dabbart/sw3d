@@ -16,6 +16,15 @@ public class OrganizerZawodow{
        this.goscie = tabelaZawodow.getGoscie();
        this.gospodarze = tabelaZawodow.getGospodarze();
        tabelaZawodowJson = new Json();
-       System.out.println(tabelaZawodowJson.toJson(tabelaZawodow));
+       tabelaZawodowJson.addClassTag("TabelaZawodnik", TabelaZawodnik.class);
+       tabelaZawodowJson.addClassTag("TabelaBieg", TabelaBieg.class);
+       tabelaZawodowJson.addClassTag("TabelaBiegIndywidualna", TabelaBiegIndywidualna.class);
+       //tabelaZawodowJson.setElementType(TabelaZawodowDroz15.class, "zawodnicy", TabelaZawodnik.class);
+
+        goscie.setNazwaDrozyny("Vildpiggarna");
+        goscie.getZawodnicy();
+        gospodarze.setNazwaDrozyny("TK Jaja");
+
+       System.out.println(tabelaZawodowJson.prettyPrint(tabelaZawodow));
     }
 }
