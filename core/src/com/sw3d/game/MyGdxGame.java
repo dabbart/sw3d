@@ -4,6 +4,8 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -12,7 +14,11 @@ import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import sun.security.ssl.Debug;
 
 public class MyGdxGame implements ApplicationListener {
@@ -21,6 +27,8 @@ public class MyGdxGame implements ApplicationListener {
 	public CameraInputController camController;
 
 	public ModelBatch modelBatch;
+
+	public Motur[] motury;
 
 	public Array<ModelInstance> instances = new Array<ModelInstance>();
 	public Array<ModelInstance> moturInstances = new Array<ModelInstance>();
@@ -32,18 +40,28 @@ public class MyGdxGame implements ApplicationListener {
 	public Environment environment;
 
 	public AssetManager assets;
+	public AssetManager getAssets() {
+		return assets;
+	}
+
 	public boolean loading;
 
 	//proba organizera zawodow i dzialania jsona
 	public OrganizerZawodow organizerZawodow;
 
+	//test menu
+	private Stage stage;
+	private Texture square;
+
 	@Override
 	public void create () {
+		Bullet.init();
+
 		modelBatch = new ModelBatch();
 
 		environment = new Environment();
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f));
-		environment.add(new DirectionalLight().set(0.9f, 0.9f, 0.9f, -1f, -0.8f, -0.2f));
+		environment.add(new DirectionalLight().set(0.9f, 0.9f, 0.9f, -0.5f, -0.8f, -0.2f));
 
 		perspectiveCamera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		perspectiveCamera.position.set(0f, 7f, 10f);
@@ -69,32 +87,58 @@ public class MyGdxGame implements ApplicationListener {
 
 		assets = new AssetManager();
 		//Debug.println("CREATE","before assets.load");
-		assets.load("core/assets/banda.g3db", Model.class);
-		assets.load("core/assets/banda_dmuchana_10st.g3db", Model.class);
-		assets.load("core/assets/maszyna_startowa.g3db", Model.class);
-		assets.load("core/assets/reklama.g3db", Model.class);
-		assets.load("core/assets/motur2.g3db", Model.class);
-		assets.load("core/assets/tor_scena.g3db", Model.class);
+		assets.load("banda.g3db", Model.class);
+		assets.load("banda_dmuchana_10st.g3db", Model.class);
+		assets.load("maszyna_startowa.g3db", Model.class);
+		assets.load("reklama.g3db", Model.class);
+		assets.load("motur_libgdx.g3db", Model.class);
+		assets.load("tor_scena.g3db", Model.class);
 		//Debug.println("CREATE","after assets.load");
 		loading = true;
 
 		organizerZawodow = new OrganizerZawodow();
+
+		stage = new Stage(new ScreenViewport());
+		square = new Texture(Gdx.files.absolute("InscribedCircle.png"));
+/*
+		Image image1 = new Image(square);
+		image1.setPosition(Gdx.graphics.getWidth()/3-image1.getWidth()/2,Gdx.graphics.getHeight()*2/3-image1.getHeight()/2);
+		stage.addActor(image1);
+
+		Image image2 = new Image(square);
+		image2.setPosition(Gdx.graphics.getWidth()*2/3-image2.getWidth()/2,Gdx.graphics.getHeight()*2/3-image2.getHeight()/2);
+		image2.setOrigin(image2.getWidth()/2,image2.getHeight()/2);
+		image2.rotateBy(45);
+		stage.addActor(image2);
+
+		Image image3 = new Image(square);
+		image3.setSize(square.getWidth()/2,square.getHeight()/2);
+		image3.setPosition(Gdx.graphics.getWidth()/3-image3.getWidth()/2,Gdx.graphics.getHeight()/3-image3.getHeight());
+		stage.addActor(image3);
+
+		square.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
+		TextureRegion textureRegion = new TextureRegion(square);
+		textureRegion.setRegion(0,0,square.getWidth()*8,square.getHeight()*4);
+		Image image4 = new Image(textureRegion);
+		image4.setSize(200,100);
+		image4.setPosition(Gdx.graphics.getWidth()*2/3-image4.getWidth()/2,Gdx.graphics.getHeight()/3-image4.getHeight());
+		stage.addActor(image4);*/
 	}
 
 	private void doneLoading()
 	{
 		//Debug.println("DONELOADING","1");
-		tasmaInstance = new ModelInstance(assets.get("core/assets/maszyna_startowa.g3db", Model.class));
+		tasmaInstance = new ModelInstance(assets.get("maszyna_startowa.g3db", Model.class));
 		tasmaInstance.transform.setToRotation(Vector3.Y, 180).trn(0,0,4.3f);
 		instances.add(tasmaInstance);
 		//Debug.println("DONELOADING","2");
 
-		Model moturModel = assets.get("core/assets/motur2.g3db", Model.class);
+		Model moturModel = assets.get("motur_libgdx.g3db", Model.class);
 		for (float i = 0; i < 4; i++)
 		{
 			ModelInstance moturInstance = new ModelInstance(moturModel);
-			moturInstance.transform.setToRotation(Vector3.Y, MathUtils.random(-8f, 8f));
-			moturInstance.transform.setTranslation(-1.5f, 0, 2.8f * i + 25f);
+			moturInstance.transform.setToRotation(Vector3.Y, /*MathUtils.random(-8f, 8f)*/0);
+			moturInstance.transform.setTranslation(-1.5f, 0, 3.5f * i + 22f);
 			for (Material mat : moturInstance.materials ) {
 				mat.set(new BlendingAttribute(GL30.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
 			}
@@ -102,8 +146,13 @@ public class MyGdxGame implements ApplicationListener {
 			moturInstances.add(moturInstance);
 		}
 
+		motury = new Motur[1];
+		motury[0] = new Motur(assets);
+		instances.add(motury[0].moturInstance);
+		moturInstances.add(motury[0].moturInstance);
+
 		//Debug.println("DONELOADING","3");
-		Model bandaModel = assets.get("core/assets/banda.g3db", Model.class);
+		Model bandaModel = assets.get("banda.g3db", Model.class);
 		for (float x = -50f; x <= 50f; x += 1.815f)
 		{
 			ModelInstance bandaInstance = new ModelInstance(bandaModel);
@@ -126,7 +175,7 @@ public class MyGdxGame implements ApplicationListener {
 		}
 		//Debug.println("DONELOADING","4");
 
-		Model bandaDmuchanaModel = assets.get("core/assets/banda_dmuchana_10st.g3db", Model.class);
+		Model bandaDmuchanaModel = assets.get("banda_dmuchana_10st.g3db", Model.class);
 		for (float i = 0; i < 4; i++)
 		{
 			for( float num = 0; num < 9; num++)
@@ -144,7 +193,7 @@ public class MyGdxGame implements ApplicationListener {
 		}
 		//Debug.println("DONELOADING","4");
 
-		Model reklamaModel = assets.get("core/assets/reklama.g3db", Model.class);
+		Model reklamaModel = assets.get("reklama.g3db", Model.class);
 		for (float x = -20f; x <= 20f; x += 1.5f)
 		{
 			ModelInstance reklamaInstance = new ModelInstance(reklamaModel);
@@ -157,7 +206,7 @@ public class MyGdxGame implements ApplicationListener {
 			reklamaInstances.add(reklamaInstance);
 		}
 
-		Model torModel = assets.get("core/assets/tor_scena.g3db");
+		Model torModel = assets.get("tor_scena.g3db");
 		for(int i = 0; i < torModel.nodes.size; i++)
 		{
 			String id = torModel.nodes.get(i).id;
@@ -199,13 +248,16 @@ public class MyGdxGame implements ApplicationListener {
 			modelBatch.render(instances, environment);
 		//Debug.println("RENDER","4");
 		modelBatch.end();
-
+/*
 		modelBatch.begin(orthographicCamera);
 		//Debug.println("RENDER","3");
 		if(instances != null)
 			modelBatch.render(instances, environment);
 		//Debug.println("RENDER","4");
-		modelBatch.end();
+		modelBatch.end();*/
+
+		stage.act();
+		stage.draw();
 	}
 
 	@Override
