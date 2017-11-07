@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody.btRigidBodyConstructionInfo;
@@ -24,6 +25,7 @@ public class Motur{
     public btRigidBody rigidBody;
     public btRigidBodyConstructionInfo rigidBodyConstructionInfo;
     public btCollisionShape shape;
+    public btCollisionObject object;
     public MyMotionState motionState;
     public com.badlogic.gdx.math.collision.BoundingBox boundingBox;
     public float mass;
