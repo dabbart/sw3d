@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
@@ -29,6 +30,7 @@ public class MyGdxGame implements ApplicationListener {
 	public ModelBatch modelBatch;
 
 	public Motur[] motury;
+	public Tor tor;
 
 	public Array<ModelInstance> instances = new Array<ModelInstance>();
 	public Array<ModelInstance> moturInstances = new Array<ModelInstance>();
@@ -52,6 +54,11 @@ public class MyGdxGame implements ApplicationListener {
 	//test menu
 	private Stage stage;
 	private Texture square;
+
+	//tmp
+	boolean collision;
+	public btCollisionConfiguration collisionConfig;
+    public btDispatcher dispatcher;
 
 	@Override
 	public void create () {
@@ -127,17 +134,16 @@ public class MyGdxGame implements ApplicationListener {
 
 	private void doneLoading()
 	{
-		//Debug.println("DONELOADING","1");
+		/*
 		tasmaInstance = new ModelInstance(assets.get("maszyna_startowa.g3db", Model.class));
 		tasmaInstance.transform.setToRotation(Vector3.Y, 180).trn(0,0,4.3f);
 		instances.add(tasmaInstance);
-		//Debug.println("DONELOADING","2");
 
 		Model moturModel = assets.get("motur_libgdx.g3db", Model.class);
 		for (float i = 0; i < 4; i++)
 		{
 			ModelInstance moturInstance = new ModelInstance(moturModel);
-			moturInstance.transform.setToRotation(Vector3.Y, /*MathUtils.random(-8f, 8f)*/0);
+			moturInstance.transform.setToRotation(Vector3.Y, 0);
 			moturInstance.transform.setTranslation(-1.5f, 0, 3.5f * i + 22f);
 			for (Material mat : moturInstance.materials ) {
 				mat.set(new BlendingAttribute(GL30.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
@@ -146,12 +152,6 @@ public class MyGdxGame implements ApplicationListener {
 			moturInstances.add(moturInstance);
 		}
 
-		motury = new Motur[1];
-		motury[0] = new Motur(assets);
-		instances.add(motury[0].moturInstance);
-		moturInstances.add(motury[0].moturInstance);
-
-		//Debug.println("DONELOADING","3");
 		Model bandaModel = assets.get("banda.g3db", Model.class);
 		for (float x = -50f; x <= 50f; x += 1.815f)
 		{
@@ -173,7 +173,6 @@ public class MyGdxGame implements ApplicationListener {
 			instances.add(bandaPInstance);
 			bandaInstances.add(bandaPInstance);
 		}
-		//Debug.println("DONELOADING","4");
 
 		Model bandaDmuchanaModel = assets.get("banda_dmuchana_10st.g3db", Model.class);
 		for (float i = 0; i < 4; i++)
@@ -191,7 +190,6 @@ public class MyGdxGame implements ApplicationListener {
 
 			}
 		}
-		//Debug.println("DONELOADING","4");
 
 		Model reklamaModel = assets.get("reklama.g3db", Model.class);
 		for (float x = -20f; x <= 20f; x += 1.5f)
@@ -204,14 +202,23 @@ public class MyGdxGame implements ApplicationListener {
 			}
 			instances.add(reklamaInstance);
 			reklamaInstances.add(reklamaInstance);
-		}
+		}*/
 
-		Model torModel = assets.get("tor_scena.g3db");
-		for(int i = 0; i < torModel.nodes.size; i++)
+
+		collisionConfig = new btDefaultCollisionConfiguration();
+		dispatcher = new btCollisionDispatcher(collisionConfig);
+
+		motury = new Motur[1];
+		motury[0] = new Motur(assets);
+		instances.add(motury[0].moturInstance);
+		moturInstances.add(motury[0].moturInstance);
+
+		tor = new Tor(assets);
+		for(int i = 0; i < tor.model.nodes.size; i++)
 		{
-			String id = torModel.nodes.get(i).id;
+			String id = tor.model.nodes.get(i).id;
 			Debug.println("LOADING SCENE",id);
-			ModelInstance torPartInstance = new ModelInstance(torModel, id);
+			ModelInstance torPartInstance = new ModelInstance(tor.model, id);
 			Node node = torPartInstance.getNode(id);
 
 			torPartInstance.transform.set(node.globalTransform);
@@ -223,7 +230,6 @@ public class MyGdxGame implements ApplicationListener {
 			instances.add(torPartInstance);
 		}
 		loading = false;
-		//Debug.println("DONELOADING","5");
 	}
 
 	@Override
@@ -233,27 +239,36 @@ public class MyGdxGame implements ApplicationListener {
 
 	@Override
 	public void render () {
-		if(loading && assets.update())
+		final float delta = Math.min(1f/30f, Gdx.graphics.getDeltaTime());
+
+		if(loading && assets.update()) {
 			doneLoading();
-		//Debug.println("RENDER","1");
+		}
+
+		if(!loading && !collision)
+		{
+			motury[0].moturInstance.transform.translate(delta, -delta, 0f);
+			motury[0].moturInstance.transform.rotate(Vector3.Y,20);
+			motury[0].object.setWorldTransform(motury[0].moturInstance.transform);
+			collision = checkCollision(tor.object, motury[0].object);
+		}
+
+		if(!loading)
+			collision = checkCollision(tor.object, motury[0].object);
+
 		camController.update();
 
 		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT|GL20.GL_DEPTH_BUFFER_BIT);
 
-		//Debug.println("RENDER","2");
 		modelBatch.begin(perspectiveCamera);
-		//Debug.println("RENDER","3");
 		if(instances != null)
 			modelBatch.render(instances, environment);
-		//Debug.println("RENDER","4");
 		modelBatch.end();
 /*
 		modelBatch.begin(orthographicCamera);
-		//Debug.println("RENDER","3");
 		if(instances != null)
 			modelBatch.render(instances, environment);
-		//Debug.println("RENDER","4");
 		modelBatch.end();*/
 
 		stage.act();
@@ -273,6 +288,34 @@ public class MyGdxGame implements ApplicationListener {
 	@Override
 	public void dispose () {
 		instances.clear();
+		dispatcher.dispose();
+		collisionConfig.dispose();
 		modelBatch.dispose();
+	}
+
+	boolean checkCollision(btCollisionObject obj0, btCollisionObject obj1){
+		CollisionObjectWrapper co0 = new CollisionObjectWrapper(obj0);
+		CollisionObjectWrapper co1 = new CollisionObjectWrapper(obj1);
+
+		//btCollisionAlgorithmConstructionInfo ci = new btCollisionAlgorithmConstructionInfo();
+		//ci.setDispatcher1(dispatcher);
+		btCollisionAlgorithm algorithm = dispatcher.findAlgorithm(co0.wrapper, co1.wrapper);
+
+		btDispatcherInfo info = new btDispatcherInfo();
+		btManifoldResult result = new btManifoldResult(co0.wrapper, co1.wrapper);
+
+		algorithm.processCollision(co0.wrapper, co1.wrapper, info, result);
+
+		boolean r = result.getPersistentManifold().getNumContacts() > 0;
+
+//		Debug.println("checkCollision()",result.toString());
+
+		dispatcher.freeCollisionAlgorithm(algorithm.getCPointer());
+		result.dispose();
+		info.dispose();
+		co1.dispose();
+		co0.dispose();
+
+		return r;
 	}
 }

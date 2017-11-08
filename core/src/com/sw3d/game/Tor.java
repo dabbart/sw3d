@@ -7,49 +7,68 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody.btRigidBodyConstructionInfo;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
-import javafx.geometry.BoundingBox;
+import sun.security.ssl.Debug;
 
-public class Motur{
-    public Model moturModel;
-    public ModelInstance moturInstance;
+public class Tor {
+    public Model model;
+    public ModelInstance instance;
     public btRigidBody rigidBody;
-    public btRigidBodyConstructionInfo rigidBodyConstructionInfo;
+    public btRigidBody.btRigidBodyConstructionInfo rigidBodyConstructionInfo;
     public btCollisionShape shape;
     public btCollisionObject object;
     public MyMotionState motionState;
     public com.badlogic.gdx.math.collision.BoundingBox boundingBox;
     public float mass;
 
+
+
     public Vector3 tmpV3;
 
-    public Motur(AssetManager assetManager)
+    public Tor(AssetManager assetManager)
     {
-        moturModel = assetManager.get("motur_libgdx.g3db", Model.class);
-        moturInstance = new ModelInstance(moturModel);
-        moturInstance.transform.setToRotation(Vector3.Y,0);
-        moturInstance.transform.setTranslation(0, 2, 0);
-        for (Material mat : moturInstance.materials ) {
+        model = assetManager.get("tor_scena.g3db", Model.class);
+
+
+        for(int i = 0; i < model.nodes.size; i++)
+        {
+            String id = model.nodes.get(i).id;
+            Debug.println("LOADING SCENE",id);
+            ModelInstance torPartInstance = new ModelInstance(model, id);
+            Node node = torPartInstance.getNode(id);
+
+            torPartInstance.transform.set(node.globalTransform);
+            node.translation.set(0,0,0);
+            node.scale.set(1, 1, 1);
+            node.rotation.idt();
+            torPartInstance.calculateTransforms();
+
+        }
+
+
+
+        instance = new ModelInstance(model);
+        instance.transform.setToRotation(Vector3.Y,0);
+        instance.transform.setTranslation(0, 0, 0);
+        for (Material mat : instance.materials ) {
             mat.set(new BlendingAttribute(GL30.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         }
         motionState = new MyMotionState();
-        motionState.transform = moturInstance.transform;
+        motionState.transform = instance.transform;
 
         boundingBox = new com.badlogic.gdx.math.collision.BoundingBox();
-        moturModel.calculateBoundingBox(boundingBox);
+        model.calculateBoundingBox(boundingBox);
 
         tmpV3 = new Vector3(boundingBox.getWidth(), boundingBox.getHeight(), boundingBox.getDepth());
         btBoxShape boxShape = new btBoxShape(tmpV3);
         shape = boxShape;
 
-        mass = 150f;
+        mass = 10000000f;
 
         if(shape != null && mass >= 0)
         {
@@ -62,12 +81,12 @@ public class Motur{
                 localInertia = tmpV3;
             }
 
-            rigidBodyConstructionInfo = new btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
+            rigidBodyConstructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
         }
 
         object = new btCollisionObject();
         object.setCollisionShape(shape);
-        object.setWorldTransform(moturInstance.transform);
+        object.setWorldTransform(instance.transform);
 
         rigidBody = new btRigidBody(rigidBodyConstructionInfo);
         rigidBody.setMotionState(motionState);
@@ -89,8 +108,6 @@ public class Motur{
     {
         object.dispose();
         shape.dispose();
-        moturModel.dispose();
+        model.dispose();
     }
 }
-
-
