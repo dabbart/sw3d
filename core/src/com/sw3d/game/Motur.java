@@ -15,7 +15,7 @@ import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody.btRigidBodyConstructionInfo;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
-import javafx.geometry.BoundingBox;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Motur{
     public Model moturModel;
@@ -25,7 +25,7 @@ public class Motur{
     public btCollisionShape shape;
     public btCollisionObject object;
     public MyMotionState motionState;
-    public com.badlogic.gdx.math.collision.BoundingBox boundingBox;
+    public BoundingBox boundingBox;
     public float mass;
 
     public Vector3 tmpV3;
@@ -42,7 +42,7 @@ public class Motur{
         motionState = new MyMotionState();
         motionState.transform = moturInstance.transform;
 
-        boundingBox = new com.badlogic.gdx.math.collision.BoundingBox();
+        boundingBox = new BoundingBox(Vector3.Zero, new Vector3(2f, 2f, 2f));
         moturModel.calculateBoundingBox(boundingBox);
 
         tmpV3 = new Vector3(boundingBox.getWidth(), boundingBox.getHeight(), boundingBox.getDepth());

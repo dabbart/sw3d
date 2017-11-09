@@ -13,7 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
-import sun.security.ssl.Debug;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Tor {
     public Model model;
@@ -23,34 +23,14 @@ public class Tor {
     public btCollisionShape shape;
     public btCollisionObject object;
     public MyMotionState motionState;
-    public com.badlogic.gdx.math.collision.BoundingBox boundingBox;
+    public BoundingBox boundingBox;
     public float mass;
-
-
 
     public Vector3 tmpV3;
 
     public Tor(AssetManager assetManager)
     {
         model = assetManager.get("tor_scena.g3db", Model.class);
-
-
-        for(int i = 0; i < model.nodes.size; i++)
-        {
-            String id = model.nodes.get(i).id;
-            Debug.println("LOADING SCENE",id);
-            ModelInstance torPartInstance = new ModelInstance(model, id);
-            Node node = torPartInstance.getNode(id);
-
-            torPartInstance.transform.set(node.globalTransform);
-            node.translation.set(0,0,0);
-            node.scale.set(1, 1, 1);
-            node.rotation.idt();
-            torPartInstance.calculateTransforms();
-
-        }
-
-
 
         instance = new ModelInstance(model);
         instance.transform.setToRotation(Vector3.Y,0);
@@ -61,8 +41,20 @@ public class Tor {
         motionState = new MyMotionState();
         motionState.transform = instance.transform;
 
-        boundingBox = new com.badlogic.gdx.math.collision.BoundingBox();
-        model.calculateBoundingBox(boundingBox);
+        boundingBox = new BoundingBox(Vector3.Zero, new Vector3(300f, 0.1f, 300f));
+
+        for(int i = 0; i < model.nodes.size; i++)
+        {
+            String id = model.nodes.get(i).id;
+            if(id == "Murawa")
+            {
+                ModelInstance torPartInstance = new ModelInstance(model, id);
+                Node node = torPartInstance.getNode(id);
+                node.calculateBoundingBox(boundingBox);
+            }
+        }
+
+        //model.calculateBoundingBox(boundingBox);
 
         tmpV3 = new Vector3(boundingBox.getWidth(), boundingBox.getHeight(), boundingBox.getDepth());
         btBoxShape boxShape = new btBoxShape(tmpV3);

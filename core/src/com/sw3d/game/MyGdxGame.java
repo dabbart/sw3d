@@ -2,10 +2,9 @@ package com.sw3d.game;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -16,13 +15,11 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.*;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import sun.security.ssl.Debug;
 
-public class MyGdxGame implements ApplicationListener {
+public class MyGdxGame extends Game implements ApplicationListener {
 	public PerspectiveCamera perspectiveCamera;
 	public OrthographicCamera orthographicCamera;
 	public CameraInputController camController;
@@ -31,6 +28,8 @@ public class MyGdxGame implements ApplicationListener {
 
 	public Motur[] motury;
 	public Tor tor;
+
+	public EscMenu escMenu;
 
 	public Array<ModelInstance> instances = new Array<ModelInstance>();
 	public Array<ModelInstance> moturInstances = new Array<ModelInstance>();
@@ -50,10 +49,6 @@ public class MyGdxGame implements ApplicationListener {
 
 	//proba organizera zawodow i dzialania jsona
 	public OrganizerZawodow organizerZawodow;
-
-	//test menu
-	private Stage stage;
-	private Texture square;
 
 	//tmp
 	boolean collision;
@@ -105,35 +100,37 @@ public class MyGdxGame implements ApplicationListener {
 
 		organizerZawodow = new OrganizerZawodow();
 
-		stage = new Stage(new ScreenViewport());
-		square = new Texture(Gdx.files.absolute("InscribedCircle.png"));
-/*
-		Image image1 = new Image(square);
-		image1.setPosition(Gdx.graphics.getWidth()/3-image1.getWidth()/2,Gdx.graphics.getHeight()*2/3-image1.getHeight()/2);
-		stage.addActor(image1);
-
-		Image image2 = new Image(square);
-		image2.setPosition(Gdx.graphics.getWidth()*2/3-image2.getWidth()/2,Gdx.graphics.getHeight()*2/3-image2.getHeight()/2);
-		image2.setOrigin(image2.getWidth()/2,image2.getHeight()/2);
-		image2.rotateBy(45);
-		stage.addActor(image2);
-
-		Image image3 = new Image(square);
-		image3.setSize(square.getWidth()/2,square.getHeight()/2);
-		image3.setPosition(Gdx.graphics.getWidth()/3-image3.getWidth()/2,Gdx.graphics.getHeight()/3-image3.getHeight());
-		stage.addActor(image3);
-
-		square.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
-		TextureRegion textureRegion = new TextureRegion(square);
-		textureRegion.setRegion(0,0,square.getWidth()*8,square.getHeight()*4);
-		Image image4 = new Image(textureRegion);
-		image4.setSize(200,100);
-		image4.setPosition(Gdx.graphics.getWidth()*2/3-image4.getWidth()/2,Gdx.graphics.getHeight()/3-image4.getHeight());
-		stage.addActor(image4);*/
 	}
 
 	private void doneLoading()
 	{
+		collisionConfig = new btDefaultCollisionConfiguration();
+		dispatcher = new btCollisionDispatcher(collisionConfig);
+
+		motury = new Motur[1];
+		motury[0] = new Motur(assets);
+		instances.add(motury[0].moturInstance);
+		moturInstances.add(motury[0].moturInstance);
+
+		tor = new Tor(assets);
+		for(int i = 0; i < tor.model.nodes.size; i++)
+		{
+			String id = tor.model.nodes.get(i).id;
+			Debug.println("LOADING SCENE",id);
+			ModelInstance torPartInstance = new ModelInstance(tor.model, id);
+			Node node = torPartInstance.getNode(id);
+
+			torPartInstance.transform.set(node.globalTransform);
+			node.translation.set(0,0,0);
+			node.scale.set(1, 1, 1);
+			node.rotation.idt();
+			torPartInstance.calculateTransforms();
+
+			instances.add(torPartInstance);
+		}
+
+		escMenu = new EscMenu();
+
 		/*
 		tasmaInstance = new ModelInstance(assets.get("maszyna_startowa.g3db", Model.class));
 		tasmaInstance.transform.setToRotation(Vector3.Y, 180).trn(0,0,4.3f);
@@ -205,30 +202,6 @@ public class MyGdxGame implements ApplicationListener {
 		}*/
 
 
-		collisionConfig = new btDefaultCollisionConfiguration();
-		dispatcher = new btCollisionDispatcher(collisionConfig);
-
-		motury = new Motur[1];
-		motury[0] = new Motur(assets);
-		instances.add(motury[0].moturInstance);
-		moturInstances.add(motury[0].moturInstance);
-
-		tor = new Tor(assets);
-		for(int i = 0; i < tor.model.nodes.size; i++)
-		{
-			String id = tor.model.nodes.get(i).id;
-			Debug.println("LOADING SCENE",id);
-			ModelInstance torPartInstance = new ModelInstance(tor.model, id);
-			Node node = torPartInstance.getNode(id);
-
-			torPartInstance.transform.set(node.globalTransform);
-			node.translation.set(0,0,0);
-			node.scale.set(1, 1, 1);
-			node.rotation.idt();
-			torPartInstance.calculateTransforms();
-
-			instances.add(torPartInstance);
-		}
 		loading = false;
 	}
 
@@ -271,8 +244,8 @@ public class MyGdxGame implements ApplicationListener {
 			modelBatch.render(instances, environment);
 		modelBatch.end();*/
 
-		stage.act();
-		stage.draw();
+		escMenu.stage.act();
+		escMenu.stage.draw();
 	}
 
 	@Override
@@ -291,6 +264,10 @@ public class MyGdxGame implements ApplicationListener {
 		dispatcher.dispose();
 		collisionConfig.dispose();
 		modelBatch.dispose();
+
+		tor.finalize();
+		motury[0].finalize();
+		escMenu.finalize();
 	}
 
 	boolean checkCollision(btCollisionObject obj0, btCollisionObject obj1){
